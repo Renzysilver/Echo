@@ -1,0 +1,85 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (never commit secrets)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
+
+# logs
+*.log
+server.log
+dev.log
+dev.out.log
+
+# database (do not commit runtime data)
+db/*.db
+db/*.db-journal
+
+# generated outputs (keep folder structure via .gitkeep)
+outputs/*
+!outputs/.gitkeep
+datasets/raw/*
+datasets/cleaned/*
+datasets/segmented/*
+!datasets/raw/.gitkeep
+!datasets/cleaned/.gitkeep
+!datasets/segmented/.gitkeep
+
+# internal worklog
+worklog.md
+
+# screenshots / downloads (internal use only)
+/download/
+
+# editor / OS
+.claude
+.idea/
+.vscode/
+*.swp
+
+# internal skills (not part of the Echo source)
+/skills/
+
+# z.ai scaffolding (not part of the Echo source)
+/.zscripts/
+/Caddyfile
+/examples/
+/mini-services/
+/.z-ai-config
+/test
+/prompt

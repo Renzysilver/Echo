@@ -1,0 +1,70 @@
+// PROJECT ECHO — Voice AI Database Schema
+// Local-first, SQLite-based storage for voice profiles, projects, and recordings.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model VoiceProfile {
+  id             String   @id @default(cuid())
+  name           String
+  accent         String   @default("unknown")
+  language       String   @default("en")
+  pitch          Float    @default(0)
+  pace           Float    @default(1.0)
+  energy         Float    @default(0.5)
+  pauseStyle     String   @default("natural")
+  pronunciation  String   @default("standard")
+  embeddingPath  String?
+  fingerprint    String?
+  pitchMean      Float    @default(120)
+  pitchStd       Float    @default(20)
+  speakingRate   Float    @default(2.5)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  projects       Project[]
+  recordings     Recording[]
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  script        String
+  status        String   @default("draft") // draft | processing | completed | failed
+  outputFile    String?
+  voiceProfileId String?
+  voiceProfile  VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  emotion       String   @default("neutral")
+  speed         Float    @default(1.0)
+  pitchAdjust   Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Recording {
+  id           String   @id @default(cuid())
+  filename     String
+  transcript   String?
+  duration     Float    @default(0)
+  quality      String   @default("unknown") // unknown | low | medium | high
+  sampleRate   Int      @default(44100)
+  channels     Int      @default(1)
+  size         Int      @default(0)
+  storagePath  String
+  voiceProfileId String?
+  voiceProfile VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  id     String @id
+  key    String @unique
+  value  String
+}
