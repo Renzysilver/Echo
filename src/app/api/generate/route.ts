@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         ok: true,
         filename,
-        path: `/outputs/${filename}`,
+        path: `/api/outputs/${filename}`,
         size: bytes.length,
       })
     }

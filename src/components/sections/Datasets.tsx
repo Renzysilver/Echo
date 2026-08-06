@@ -130,9 +130,10 @@ export function Datasets() {
   const analyzeRecording = async (rec: Recording) => {
     setAnalyzing(rec.id)
     try {
-      // Fetch the audio file (it's stored on disk under /datasets/raw/)
-      const audioRes = await fetch(`/datasets/raw/${rec.filename}`)
-      if (!audioRes.ok) throw new Error('fetch failed')
+      // Fetch the audio file via the streaming endpoint (datasets/raw/ is not
+      // inside public/, so we go through /api/audio which supports Range).
+      const audioRes = await fetch(`/api/audio/${encodeURIComponent(rec.filename)}`)
+      if (!audioRes.ok) throw new Error(`fetch failed (${audioRes.status})`)
       const arrayBuffer = await audioRes.arrayBuffer()
       const audioBuffer = await decodeAudio(arrayBuffer)
       const analysis = analyzeAudioBuffer(audioBuffer)
@@ -143,7 +144,7 @@ export function Datasets() {
       })
     } catch (err) {
       console.error(err)
-      toast({ title: 'Analysis failed — file may be in webm format', variant: 'destructive' })
+      toast({ title: 'Analysis failed', description: 'Could not load or decode the audio file.', variant: 'destructive' })
     } finally {
       setAnalyzing(null)
     }
@@ -155,8 +156,12 @@ export function Datasets() {
       audioRef.current.pause()
       setPlaying(null)
     } else {
-      audioRef.current.src = `/datasets/raw/${filename}`
-      audioRef.current.play()
+      audioRef.current.src = `/api/audio/${encodeURIComponent(filename)}`
+      audioRef.current.play().catch(err => {
+        console.error('playback failed', err)
+        toast({ title: 'Playback failed', variant: 'destructive' })
+        setPlaying(null)
+      })
       setPlaying(filename)
     }
   }

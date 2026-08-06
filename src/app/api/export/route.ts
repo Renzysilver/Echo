@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         ok: true,
         filename: outName,
-        path: `/outputs/${outName}`,
+        path: `/api/outputs/${outName}`,
         size: stat.size,
         format,
       })
@@ -71,14 +71,18 @@ export async function POST(req: NextRequest) {
     const hasFfmpeg = await ffmpegAvailable()
     if (!hasFfmpeg) {
       // Fall back to WAV and warn
-      await fs.copyFile(inputPath, outputPath.replace(/\.(mp3|ogg|flac)$/, '.wav'))
+      const fallbackName = outName.replace(/\.(mp3|ogg|flac)$/, '.wav')
+      const fallbackPath = path.join(OUTPUT_DIR, fallbackName)
+      await fs.copyFile(inputPath, fallbackPath)
       await fs.unlink(inputPath)
+      const fallbackStat = await fs.stat(fallbackPath)
       return NextResponse.json({
         ok: false,
         warning: 'ffmpeg_not_installed',
         message: 'ffmpeg is not available on the host. Exported as WAV instead. Install ffmpeg to enable MP3/OGG/FLAC conversion.',
-        filename: outName.replace(/\.(mp3|ogg|flac)$/, '.wav'),
-        path: `/outputs/${outName.replace(/\.(mp3|ogg|flac)$/, '.wav')}`,
+        filename: fallbackName,
+        path: `/api/outputs/${fallbackName}`,
+        size: fallbackStat.size,
         format: 'wav',
       })
     }
@@ -100,7 +104,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       filename: outName,
-      path: `/outputs/${outName}`,
+      path: `/api/outputs/${outName}`,
       size: stat.size,
       format,
     })

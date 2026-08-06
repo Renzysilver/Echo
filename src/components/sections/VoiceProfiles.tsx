@@ -90,23 +90,34 @@ export function VoiceProfiles() {
       }
       toast({ title: 'Loading recordings for analysis...', description: `${recs.length} recording(s) found` })
 
-      // Fetch each recording and analyze
+      // Fetch each recording via the streaming audio endpoint and analyze.
+      // /datasets/raw/ is not under public/, so we go through /api/audio which
+      // streams the bytes with the correct Content-Type and Range support.
       const analyses: any[] = []
+      let lastError: any = null
       for (const rec of recs) {
         try {
-          const audioRes = await fetch(`/datasets/raw/${rec.filename}`)
-          if (!audioRes.ok) continue
+          const audioRes = await fetch(`/api/audio/${encodeURIComponent(rec.filename)}`)
+          if (!audioRes.ok) {
+            lastError = new Error(`fetch ${rec.filename} → ${audioRes.status}`)
+            continue
+          }
           const arrayBuffer = await audioRes.arrayBuffer()
           const { decodeAudio, analyzeAudioBuffer } = await import('@/lib/audio-analysis')
           const audioBuffer = await decodeAudio(arrayBuffer)
           analyses.push(analyzeAudioBuffer(audioBuffer))
         } catch (e) {
           console.warn('skip', rec.filename, e)
+          lastError = e
         }
       }
 
       if (!analyses.length) {
-        toast({ title: 'Could not analyze any recording', variant: 'destructive' })
+        toast({
+          title: 'Could not analyze any recording',
+          description: lastError?.message || 'Audio files could not be loaded or decoded.',
+          variant: 'destructive',
+        })
         return
       }
 
